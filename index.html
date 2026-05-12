@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>调研拜访助手</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #faf9f7;
+      --surface: #ffffff;
+      --border: #e8e5e0;
+      --text: #1a1a1a;
+      --text-secondary: #6b6560;
+      --text-hint: #9b9590;
+      --accent: #c96442;
+      --accent-hover: #b5573a;
+      --input-bg: #f5f3f0;
+      --input-focus: #ece9e4;
+      --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1917;
+      --surface: #242320;
+      --border: #3a3835;
+      --text: #e8e5e0;
+      --text-secondary: #9b9590;
+      --text-hint: #6b6560;
+      --accent: #d4815e;
+      --accent-hover: #e0926f;
+      --input-bg: #2a2927;
+      --input-focus: #33322f;
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.15);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.15);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
+    }
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+      min-height: 100vh;
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0 32px;
+    }
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      color: #fff;
+      font-size: 22px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+    .header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { background: var(--input-bg); }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 24px 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .field label .req { color: var(--accent); margin-left: 2px; }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+      -webkit-appearance: none;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      background: var(--input-focus);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,100,66,0.1);
+    }
+    .field input::placeholder, .field textarea::placeholder {
+      color: var(--text-hint);
+    }
+    .field textarea { min-height: 72px; resize: vertical; line-height: 1.5; }
+    .field .hint {
+      font-size: 12px;
+      color: var(--text-hint);
+      margin-top: 4px;
+    }
+    .brand-entry {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 10px;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .brand-entry:hover { border-color: var(--accent); }
+    .brand-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .brand-row .brand-name-wrap { flex: 1; }
+    .brand-row .brand-city-wrap { flex: 1; }
+    .brand-entry input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .brand-entry input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(201,100,66,0.1);
+    }
+    .brand-entry input::placeholder { color: var(--text-hint); }
+    .brand-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-hint);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+    .brand-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--text-hint);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .brand-remove:hover { background: var(--border); color: var(--accent); }
+    .brand-add {
+      width: 100%;
+      padding: 10px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .brand-add:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(201,100,66,0.04);
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+    }
+    .submit-btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .status-page {
+      display: none;
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .status-page.active { display: block; }
+    .status-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    .status-icon.loading {
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
+      font-size: 0;
+    }
+    .status-icon.success { background: rgba(52,168,83,0.1); color: #34a853; }
+    .status-icon.error { background: rgba(234,67,53,0.1); color: #ea4335; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-page h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .status-page p { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; }
+    .status-page button {
+      margin-top: 24px;
+      padding: 10px 28px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      color: var(--accent);
+      background: transparent;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .status-page button:hover { background: var(--accent); color: #fff; }
+    #form-section { display: block; }
+    #form-section.hidden { display: none; }
+    @media (max-width: 480px) {
+      .app { padding: 16px 16px 32px; }
+      .card { padding: 20px 16px; }
+      .brand-row { flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" title="切换主题" aria-label="切换主题">
+    <span id="theme-icon">&#9790;</span>
+  </button>
+
+  <div class="app">
+    <div class="header">
+      <div class="header-icon">&#9998;</div>
+      <h1>调研拜访助手</h1>
+      <p>填写客户信息，自动生成调研报告与拜访计划</p>
+    </div>
+
+    <form id="visit-form" id-section="form-section">
+      <div class="card">
+        <div class="card-title">客户信息</div>
+        <div class="field">
+          <label>管理公司名称 <span class="req">*</span></label>
+          <input type="text" id="company_name" placeholder="输入工商注册全称" required>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">品牌与区域</div>
+        <div id="brand-list">
+          <div class="brand-entry" data-index="0">
+            <div class="brand-row">
+              <div class="brand-name-wrap">
+                <div class="brand-label">品牌名称</div>
+                <input type="text" class="brand-name" placeholder="如：汇通杨家烤肉" required>
+              </div>
+              <div class="brand-city-wrap">
+                <div class="brand-label">搜索城市</div>
+                <input type="text" class="brand-city" placeholder="如：西安, 咸阳">
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="brand-add" onclick="addBrand()">+ 添加品牌</button>
+        <div class="field" style="margin-top: 14px;">
+          <label>默认区域</label>
+          <input type="text" id="default_region" placeholder="未填城市时使用此区域（选填）">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">拜访安排</div>
+        <div class="field">
+          <label>拜访时间 <span class="req">*</span></label>
+          <input type="datetime-local" id="visit_time" required>
+        </div>
+        <div class="field">
+          <label>拜访地点 <span class="req">*</span></label>
+          <input type="text" id="visit_location" placeholder="如：客户总部会议室" required>
+        </div>
+        <div class="field">
+          <label>我方拜访人员 <span class="req">*</span></label>
+          <input type="text" id="visit_members" placeholder="如：张总、李明、王磊" required>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">补充信息</div>
+        <div class="field">
+          <label>额外情报</label>
+          <textarea id="extra_info" placeholder="已掌握的客户信息、需重点关注的事项（选填）"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">生成报告</button>
+    </form>
+
+    <div class="status-page" id="loading-section">
+      <div class="status-icon loading"></div>
+      <h2>正在生成报告</h2>
+      <p>预计需要 2-3 分钟</p>
+      <p>完成后将通过飞书消息通知您</p>
+      <p style="margin-top: 12px; font-size: 13px; color: var(--text-hint);">可关闭此页面，不影响生成</p>
+    </div>
+
+    <div class="status-page" id="done-section">
+      <div class="status-icon success">&#10003;</div>
+      <h2>已提交</h2>
+      <p>报告生成后将通过飞书推送给您</p>
+      <button onclick="resetForm()">再次提交</button>
+    </div>
+
+    <div class="status-page" id="error-section">
+      <div class="status-icon error">&#10007;</div>
+      <h2 id="error-title">提交失败</h2>
+      <p id="error-msg">请稍后重试</p>
+      <button onclick="resetForm()">返回重试</button>
+    </div>
+  </div>
+
+  <script src="https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/open/js-sdk/h5-js-sdk-1.5.16.js"></script>
+  <script>
+    var APP_ID = 'cli_a976f72676b99bd6';
+    var WEBHOOK_URL = 'https://open.feishu.cn/anycross/trigger/callback/MGQ2ZmI4MjUyYmUwM2U3OGMwNGRhZjJlOTcyYmQ0Mjc4';
+    var authCode = '';
+    var brandIndex = 1;
+
+    function initTheme() {
+      var hour = new Date().getHours();
+      var saved = localStorage.getItem('theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+      } else if (hour >= 19 || hour < 7) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+      updateThemeIcon();
+    }
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.getElementById('theme-icon').innerHTML = isDark ? '&#9728;' : '&#9790;';
+    }
+
+    function addBrand() {
+      var list = document.getElementById('brand-list');
+      var entry = document.createElement('div');
+      entry.className = 'brand-entry';
+      entry.setAttribute('data-index', brandIndex);
+      entry.innerHTML = '<button type="button" class="brand-remove" onclick="removeBrand(this)" title="删除">&times;</button>' +
+        '<div class="brand-row">' +
+        '<div class="brand-name-wrap"><div class="brand-label">品牌名称</div>' +
+        '<input type="text" class="brand-name" placeholder="如：杏梨烤肉" required></div>' +
+        '<div class="brand-city-wrap"><div class="brand-label">搜索城市</div>' +
+        '<input type="text" class="brand-city" placeholder="如：西安, 咸阳"></div></div>';
+      list.appendChild(entry);
+      brandIndex++;
+      entry.querySelector('.brand-name').focus();
+    }
+
+    function removeBrand(btn) {
+      var entry = btn.closest('.brand-entry');
+      if (document.querySelectorAll('.brand-entry').length > 1) {
+        entry.remove();
+      }
+    }
+
+    function buildBrandList() {
+      var entries = document.querySelectorAll('.brand-entry');
+      var lines = [];
+      for (var i = 0; i < entries.length; i++) {
+        var name = entries[i].querySelector('.brand-name').value.trim();
+        var city = entries[i].querySelector('.brand-city').value.trim();
+        if (name) {
+          lines.push(city ? name + '|' + city : name);
+        }
+      }
+      return lines.join('\n');
+    }
+
+    function showSection(id) {
+      document.getElementById('visit-form').classList.add('hidden');
+      var pages = document.querySelectorAll('.status-page');
+      for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+      if (id !== 'form-section') {
+        document.getElementById(id).classList.add('active');
+      } else {
+        document.getElementById('visit-form').classList.remove('hidden');
+      }
+    }
+
+    function resetForm() { showSection('form-section'); getAuthCode(); }
+
+    function getAuthCode() {
+      if (!window.tt) return;
+      if (window.tt.requestAccess) {
+        window.tt.requestAccess({
+          appID: APP_ID, scopeList: [],
+          success: function(r) { authCode = r.code; },
+          fail: function(e) { if (e.errno === 103) fallbackAuth(); }
+        });
+      } else { fallbackAuth(); }
+    }
+
+    function fallbackAuth() {
+      window.tt.requestAuthCode({
+        appId: APP_ID,
+        success: function(r) { authCode = r.code; },
+        fail: function(e) { console.error(e); }
+      });
+    }
+
+    document.getElementById('visit-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = '提交中...';
+
+      var data = {
+        code: authCode,
+        company_name: document.getElementById('company_name').value.trim(),
+        brand_list: buildBrandList(),
+        default_region: document.getElementById('default_region').value.trim(),
+        visit_time: document.getElementById('visit_time').value,
+        visit_location: document.getElementById('visit_location').value.trim(),
+        visit_members: document.getElementById('visit_members').value.trim(),
+        extra_info: document.getElementById('extra_info').value.trim()
+      };
+
+      if (!data.brand_list) {
+        btn.disabled = false; btn.textContent = '生成报告';
+        alert('请至少填写一个品牌名称'); return;
+      }
+
+      fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function(r) {
+        if (r.ok) { showSection('loading-section'); setTimeout(function() { showSection('done-section'); }, 3000); }
+        else { throw new Error('HTTP ' + r.status); }
+      })
+      .catch(function(err) {
+        document.getElementById('error-msg').textContent = err.message || '网络错误';
+        showSection('error-section');
+      })
+      .finally(function() { btn.disabled = false; btn.textContent = '生成报告'; });
+    });
+
+    initTheme();
+    getAuthCode();
+  </script>
+</body>
+</html>
