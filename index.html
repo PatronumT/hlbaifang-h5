@@ -392,12 +392,24 @@
     </div>
   </div>
 
-  <script src="https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/open/js-sdk/h5-js-sdk-1.5.16.js"></script>
+  <!-- JSSDK removed, using OAuth redirect instead -->
   <script>
     var APP_ID = 'cli_a976f72676b99bd6';
     var WEBHOOK_URL = 'https://open.feishu.cn/anycross/trigger/callback/MGQ2ZmI4MjUyYmUwM2U3OGMwNGRhZjJlOTcyYmQ0Mjc4';
+    var REDIRECT_URI = encodeURIComponent(window.location.origin + window.location.pathname);
     var authCode = '';
     var brandIndex = 1;
+
+    (function checkOAuth() {
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('code');
+      if (code) {
+        authCode = code;
+        history.replaceState(null, '', window.location.pathname);
+      } else if (/feishu|lark/i.test(navigator.userAgent)) {
+        window.location.href = 'https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=' + APP_ID + '&redirect_uri=' + REDIRECT_URI + '&response_type=code';
+      }
+    })();
 
     function initTheme() {
       var hour = new Date().getHours();
@@ -472,24 +484,7 @@
 
     function resetForm() { showSection('form-section'); getAuthCode(); }
 
-    function getAuthCode() {
-      if (!window.tt) return;
-      if (window.tt.requestAccess) {
-        window.tt.requestAccess({
-          appID: APP_ID, scopeList: [],
-          success: function(r) { authCode = r.code; },
-          fail: function(e) { if (e.errno === 103) fallbackAuth(); }
-        });
-      } else { fallbackAuth(); }
-    }
-
-    function fallbackAuth() {
-      window.tt.requestAuthCode({
-        appId: APP_ID,
-        success: function(r) { authCode = r.code; },
-        fail: function(e) { console.error(e); }
-      });
-    }
+    function getAuthCode() {}
 
     document.getElementById('visit-form').addEventListener('submit', function(e) {
       e.preventDefault();
