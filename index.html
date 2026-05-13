@@ -371,16 +371,16 @@
 
     <div class="status-page" id="loading-section">
       <div class="status-icon loading"></div>
-      <h2>正在生成报告</h2>
-      <p>预计需要 2-3 分钟</p>
-      <p>完成后将通过飞书消息通知您</p>
-      <p style="margin-top: 12px; font-size: 13px; color: var(--text-hint);">可关闭此页面，不影响生成</p>
+      <h2>正在提交</h2>
+      <p>请稍候...</p>
     </div>
 
     <div class="status-page" id="done-section">
       <div class="status-icon success">&#10003;</div>
       <h2>已提交</h2>
-      <p>报告生成后将通过飞书推送给您</p>
+      <p>报告预计 5-8 分钟生成完毕</p>
+      <p>完成后将通过飞书消息推送给您</p>
+      <p style="margin-top: 8px; font-size: 13px; color: var(--text-hint);">可关闭此页面，不影响生成</p>
       <button onclick="resetForm()">再次提交</button>
     </div>
 
@@ -496,6 +496,7 @@
       var btn = document.getElementById('submit-btn');
       btn.disabled = true;
       btn.textContent = '提交中...';
+      showSection('loading-section');
 
       var data = {
         code: authCode,
@@ -520,8 +521,7 @@
         body: JSON.stringify(data)
       })
       .then(function() {
-        showSection('loading-section');
-        setTimeout(function() { showSection('done-section'); }, 3000);
+        showSection('done-section');
       })
       .catch(function(err) {
         document.getElementById('error-msg').textContent = err.message || '网络错误';
