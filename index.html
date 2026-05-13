@@ -398,6 +398,7 @@
     var WEBHOOK_URL = 'https://open.feishu.cn/anycross/trigger/callback/MGQ2ZmI4MjUyYmUwM2U3OGMwNGRhZjJlOTcyYmQ0Mjc4';
     var REDIRECT_URI = encodeURIComponent(window.location.origin + window.location.pathname);
     var authCode = '';
+    var codeTime = 0;
     var brandIndex = 1;
 
     (function checkOAuth() {
@@ -405,6 +406,7 @@
       var code = params.get('code');
       if (code) {
         authCode = code;
+        codeTime = Date.now();
         history.replaceState(null, '', window.location.pathname);
       } else if (/feishu|lark/i.test(navigator.userAgent)) {
         window.location.href = 'https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=' + APP_ID + '&redirect_uri=' + REDIRECT_URI + '&response_type=code';
@@ -482,12 +484,66 @@
       }
     }
 
-    function resetForm() { showSection('form-section'); getAuthCode(); }
+    function saveFormData() {
+      var data = {
+        company_name: document.getElementById('company_name').value,
+        default_region: document.getElementById('default_region').value,
+        visit_time: document.getElementById('visit_time').value,
+        visit_location: document.getElementById('visit_location').value,
+        visit_members: document.getElementById('visit_members').value,
+        extra_info: document.getElementById('extra_info').value,
+        brands: []
+      };
+      var entries = document.querySelectorAll('.brand-entry');
+      for (var i = 0; i < entries.length; i++) {
+        data.brands.push({
+          name: entries[i].querySelector('.brand-name').value,
+          city: entries[i].querySelector('.brand-city').value
+        });
+      }
+      localStorage.setItem('form_draft', JSON.stringify(data));
+    }
+
+    function restoreFormData() {
+      var saved = localStorage.getItem('form_draft');
+      if (!saved) return;
+      try {
+        var data = JSON.parse(saved);
+        document.getElementById('company_name').value = data.company_name || '';
+        document.getElementById('default_region').value = data.default_region || '';
+        document.getElementById('visit_time').value = data.visit_time || '';
+        document.getElementById('visit_location').value = data.visit_location || '';
+        document.getElementById('visit_members').value = data.visit_members || '';
+        document.getElementById('extra_info').value = data.extra_info || '';
+        if (data.brands && data.brands.length > 0) {
+          document.querySelector('.brand-name').value = data.brands[0].name || '';
+          document.querySelector('.brand-city').value = data.brands[0].city || '';
+          for (var i = 1; i < data.brands.length; i++) {
+            addBrand();
+            var entries = document.querySelectorAll('.brand-entry');
+            var last = entries[entries.length - 1];
+            last.querySelector('.brand-name').value = data.brands[i].name || '';
+            last.querySelector('.brand-city').value = data.brands[i].city || '';
+          }
+        }
+        localStorage.removeItem('form_draft');
+      } catch (e) {}
+    }
+
+    function resetForm() {
+      localStorage.removeItem('form_draft');
+      window.location.href = window.location.pathname;
+    }
 
     function getAuthCode() {}
 
     document.getElementById('visit-form').addEventListener('submit', function(e) {
       e.preventDefault();
+      if (codeTime && Date.now() - codeTime > 240000) {
+        saveFormData();
+        window.location.href = window.location.pathname;
+        return;
+      }
       var btn = document.getElementById('submit-btn');
       btn.disabled = true;
       btn.textContent = '提交中...';
@@ -526,6 +582,7 @@
     });
 
     initTheme();
+    restoreFormData();
     getAuthCode();
   </script>
 </body>
