@@ -503,7 +503,7 @@
         company_name: document.getElementById('company_name').value.trim(),
         brand_list: buildBrandList(),
         default_region: document.getElementById('default_region').value.trim(),
-        visit_time: document.getElementById('visit_time').value,
+        visit_time: document.getElementById('visit_time').value.replace('T', ' '),
         visit_location: document.getElementById('visit_location').value.trim(),
         visit_members: document.getElementById('visit_members').value.trim(),
         extra_info: document.getElementById('extra_info').value.trim()
