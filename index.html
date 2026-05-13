@@ -515,12 +515,13 @@
 
       fetch(WEBHOOK_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(data)
       })
-      .then(function(r) {
-        if (r.ok) { showSection('loading-section'); setTimeout(function() { showSection('done-section'); }, 3000); }
-        else { throw new Error('HTTP ' + r.status); }
+      .then(function() {
+        showSection('loading-section');
+        setTimeout(function() { showSection('done-section'); }, 3000);
       })
       .catch(function(err) {
         document.getElementById('error-msg').textContent = err.message || '网络错误';
